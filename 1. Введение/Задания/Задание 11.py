@@ -1,7 +1,7 @@
 from math import sqrt
 
-x1 = int(input())
-y1 = int(input())
-x2 = int(input())
-y2 = int(input())
+x1 = float(input())
+y1 = float(input())
+x2 = float(input())
+y2 = float(input())
 print(sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
