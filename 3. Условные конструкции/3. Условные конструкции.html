@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3. Условные конструкции</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/prism.css">
+    <script src="https://kit.fontawesome.com/b8991598f2.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><span class="emoji">📝</span>3. Условные конструкции</h1>
+        <p>Теоретический материал</p>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="#условные-конструкции">🔹 Условные конструкции</a></li>
+            <li><a href="#тернарный-оператор">🔹 Тернарный оператор</a></li>
+            <li><a href="#конструкция-match">🔹 Конструкция match</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <section id="условные-конструкции" class="section">
+            <h2>Условный оператор <code>if-elif-else</code></h2>
+            <div class="syntax-block">
+                <pre><code>if логическое_выражение:
+    операторы...
+[elif логическое_выражение:
+    операторы...]
+[else: 
+    операторы...]</code></pre>
+            </div>
+            <p>Логическое выражение состоит из логических операторов и операций.</p>
+            <p>Логические операторы: <code>&gt;</code> <code>&lt;</code> <code>==</code> <code>!=</code>
+                <code>&gt;=</code> <code>&lt;=</code></p>
+            <p>Логические операции: <code>and</code> <code>or</code> <code>not</code></p>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">age = 18
+if age &gt;= 18:
+    print(&quot;Вы совершеннолетний&quot;)
+else:
+    print(&quot;Вы несовершеннолетний&quot;)
+</code></pre>
+            </div>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">score = 75
+if score &gt;= 90:
+    print(&quot;Отлично&quot;)
+elif score &gt;= 70:
+    print(&quot;Хорошо&quot;)
+elif score &gt;= 50:
+    print(&quot;Удовлетворительно&quot;)
+else:
+    print(&quot;Неудовлетворительно&quot;)
+</code></pre>
+            </div>
+            <h3>Указание диапазона значений в условии</h3>
+            <p>Вместо условия <code>x &gt; 10 and x &lt; 20</code> можно использовать сокращённую запись:</p>
+            <div class="syntax-block">
+                <pre><code>if 10 &lt; x &lt; 20:
+    print('x лежит в диапазоне от 10 до 20')</code></pre>
+            </div>
+        </section>
+
+        <section id="тернарный-оператор" class="section">
+            <h2>Тернарный оператор</h2>
+            <p>Тернарный оператор позволяет записывать простые условные конструкции в одну строку. Это делает код более
+                компактным и читаемым, когда нужно присвоить значение переменной в зависимости от условия.</p>
+            <div class="syntax-block">
+                <pre><code>переменная = значение_если_true if логическое_выражение else значение_если_false</code></pre>
+            </div>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">a = 10
+b = 3
+max_num = a if a &gt; b else b
+</code></pre>
+            </div>
+        </section>
+
+        <section id="конструкция-match" class="section">
+            <h2>Конструкция <code>match</code></h2>
+            <p>Конструкция <code>match</code> (введена в Python 3.10) предоставляет мощный способ сопоставления с
+                образцом. Она позволяет сравнивать значение переменной с различными шаблонами и выполнять
+                соответствующий блок кода, что похоже на оператор <code>switch</code> в других языках программирования,
+                но с более широкими возможностями.</p>
+            <div class="syntax-block">
+                <pre><code>match выражение:
+    case шаблон_1:
+        операторы...
+    case шаблон_2:
+        операторы...
+    ...
+    case _:
+        операторы_по_умолчанию</code></pre>
+            </div>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">day = 2
+match day:
+    case 1:
+        print('Понедельник')
+    case 2:
+        print('Вторник')
+    case 3:
+        print('Среда')
+    case 4:
+        print('Четверг')
+    case 5:
+        print('Пятница')
+    case 6:
+        print('Суббота')
+    case 7:
+        print('Воскресенье')
+    case _:
+        print('Неверный номер дня')
+</code></pre>
+            </div>
+
+            <h3>Объединение шаблонов</h3>
+            <p>Можно указывать несколько шаблонов в одном блоке <code>case</code>, используя оператор <code>|</code>
+                (или):</p>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">status = 404
+match status:
+    case 400 | 404 | 500:
+        print("Ошибка")
+    case 200:
+        print("OK")
+    case _:
+        print("Неизвестный статус")
+</code></pre>
+            </div>
+
+            <h3>Распаковка последовательностей</h3>
+            <p>Конструкция <code>match</code> позволяет не только проверять значения, но и распаковывать структуру
+                данных (например, списки или кортежи):</p>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">point = (0, 5)
+match point:
+    case (0, 0):
+        print("Точка в начале координат")
+    case (0, y):
+        print(f"Точка на оси Y: y={y}")
+    case (x, 0):
+        print(f"Точка на оси X: x={x}")
+    case (x, y):
+        print(f"Точка с координатами: ({x}, {y})")
+</code></pre>
+            </div>
+
+            <h3>Условия в шаблонах</h3>
+            <p>К шаблону можно добавить условие <code>if</code>, которое будет проверяться только если шаблон совпал:
+            </p>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">num = 5
+match num:
+    case x if x % 2 == 0:
+        print(f"{x} — четное число")
+    case x:
+        print(f"{x} — нечетное число")
+</code></pre>
+            </div>
+        </section>
+
+    </main>
+</div>
+<script src="../assets/js/prism.js"></script>
+<script src="../assets/js/script.js"></script>
+</body>
+</html>
