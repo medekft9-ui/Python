@@ -138,6 +138,15 @@ body {
     margin: 1rem 0 0.5rem 0;
 }
 
+.section p {
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.section li {
+    margin-bottom: 1rem;
+}
+
 /* === ACCORDION SECTIONS (README) === */
 .accordion-section {
     padding: 0 !important;
@@ -483,6 +492,16 @@ li {
     margin-top: 0;
 }
 
+/* Remove bottom margin for the last element in alert boxes to fix spacing issues */
+.note > :last-child,
+.important > :last-child,
+.common-mistake > :last-child,
+.example-box > :last-child,
+.warning > :last-child,
+.success > :last-child {
+    margin-bottom: 0;
+}
+
 .highlight-math {
     color: #e67e22;
     font-weight: bold;
@@ -496,4 +515,56 @@ li {
     color: #8e44ad;
     margin: 0 10px;
     display: inline-block;
+}
+
+/* === SYNTAX STRUCTURE BLOCKS === */
+.syntax-block {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #6c757d;
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    font-family: var(--font-mono);
+    color: var(--secondary);
+    overflow-x: auto;
+    position: relative;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+}
+
+.syntax-block::before {
+    content: "Синтаксис";
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--secondary-light);
+    color: #fff;
+    font-family: var(--font-main);
+    font-size: 0.75rem;
+    padding: 2px 10px;
+    border-radius: 0 0 0 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.syntax-block pre {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.syntax-block code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.syntax-block em, .syntax-block i {
+    color: var(--primary);
+    font-style: normal;
+    font-weight: bold;
+    background: rgba(52, 152, 219, 0.1);
+    padding: 0 4px;
+    border-radius: 3px;
 }
