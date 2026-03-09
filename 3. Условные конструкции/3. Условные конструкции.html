@@ -59,6 +59,51 @@ else:
     print(&quot;Неудовлетворительно&quot;)
 </code></pre>
             </div>
+            <h3>Логические операции <code>and</code> и <code>or</code></h3>
+            <p>С помощью операций <code>and</code> и <code>or</code> можно объединять несколько логических выражений в одном условии.</p>
+            <ul>
+                <li><code>and</code> (логическое «И») — условие истинно, только если <strong>оба</strong> выражения истинны.</li>
+                <li><code>or</code> (логическое «ИЛИ») — условие истинно, если <strong>хотя бы одно</strong> из выражений истинно.</li>
+            </ul>
+            <div class="syntax-block">
+                <pre><code>if выражение_1 and выражение_2:
+    ...
+
+if выражение_1 or выражение_2:
+    ...</code></pre>
+            </div>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">age = 20
+has_ticket = True
+
+if age &gt;= 18 and has_ticket:
+    print(&quot;Вход разрешён&quot;)
+else:
+    print(&quot;Вход запрещён&quot;)
+</code></pre>
+            </div>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">day = &quot;суббота&quot;
+
+if day == &quot;суббота&quot; or day == &quot;воскресенье&quot;:
+    print(&quot;Выходной день&quot;)
+else:
+    print(&quot;Рабочий день&quot;)
+</code></pre>
+            </div>
+            <p>Операции можно комбинировать. Для управления приоритетом используются скобки:</p>
+            <div class="pre-code">
+<pre class="line-numbers match-braces" data-download-link><code class="language-python">age = 17
+has_parent = True
+has_ticket = True
+
+if (age &gt;= 18 or has_parent) and has_ticket:
+    print(&quot;Вход разрешён&quot;)
+else:
+    print(&quot;Вход запрещён&quot;)
+</code></pre>
+            </div>
+
             <h3>Указание диапазона значений в условии</h3>
             <p>Вместо условия <code>x &gt; 10 and x &lt; 20</code> можно использовать сокращённую запись:</p>
             <div class="syntax-block">
