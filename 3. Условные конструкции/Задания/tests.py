@@ -215,6 +215,7 @@ TASKS = [
         time_limit=5.0,
         memory_limit_bytes=64 * 1024 * 1024,
         forbidden_constructs=["For", "While", "FunctionDef"],
+        max_constructs={"If": 3},
         check_pep8=True,
         validator=exact_match,
         test_cases=[
