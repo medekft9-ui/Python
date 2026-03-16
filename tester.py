@@ -2,16 +2,23 @@ import ast
 import os
 import subprocess
 import sys
-import threading
-import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-try:
-    import psutil
-    _PSUTIL_AVAILABLE = True
-except ImportError:
-    _PSUTIL_AVAILABLE = False
+_MEMORY_WRAPPER = (
+    "import tracemalloc, runpy, sys, time\n"
+    "tracemalloc.start()\n"
+    "t_start = time.perf_counter()\n"
+    "try:\n"
+    "    runpy.run_path(sys.argv[1], run_name='__main__')\n"
+    "finally:\n"
+    "    elapsed = time.perf_counter() - t_start\n"
+    "    _, peak = tracemalloc.get_traced_memory()\n"
+    "    tracemalloc.stop()\n"
+    "    sys.stderr.write(f'__TIME__:{elapsed}\\n')\n"
+    "    sys.stderr.write(f'__MEM__:{peak}\\n')\n"
+    "    sys.stderr.flush()\n"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -37,6 +44,7 @@ class TaskConfig:
     time_limit: float = 10.0
     memory_limit_bytes: int = 128 * 1024 * 1024
     forbidden_constructs: List[str] = field(default_factory=list)
+    max_constructs: Dict[str, int] = field(default_factory=dict)
     check_pep8: bool = True
 
 
@@ -102,20 +110,21 @@ def _run_script(
     input_data: str,
     time_limit: float,
     memory_limit_bytes: int,
-) -> Tuple[Optional[str], Optional[str]]:
+) -> Tuple[Optional[str], Optional[str], float, Optional[int]]:
     """
     Запускает Python-скрипт с заданным вводом.
-    Возвращает (stdout, error_msg). При успехе error_msg is None.
+    Возвращает (stdout, error_msg, elapsed_sec, mem_peak_bytes).
+    При успехе error_msg is None.
     """
     if not os.path.exists(file_path):
-        return None, f"Файл не найден: {os.path.basename(file_path)}"
+        return None, f"Файл не найден: {os.path.basename(file_path)}", 0.0, None
 
     if os.path.getsize(file_path) == 0:
-        return None, "Файл пустой — решение не написано"
+        return None, "Файл пустой — решение не написано", 0.0, None
 
     try:
         process = subprocess.Popen(
-            [sys.executable, file_path],
+            [sys.executable, "-c", _MEMORY_WRAPPER, file_path],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -123,49 +132,42 @@ def _run_script(
             encoding="utf-8",
         )
     except Exception as exc:
-        return None, f"Ошибка запуска: {exc}"
-
-    memory_exceeded = [False]
-
-    if _PSUTIL_AVAILABLE and memory_limit_bytes > 0:
-        def _monitor(pid: int, limit_bytes: int, flag: list) -> None:
-            try:
-                ps = psutil.Process(pid)
-                while True:
-                    try:
-                        if ps.memory_info().rss > limit_bytes:
-                            flag[0] = True
-                            ps.kill()
-                            return
-                    except psutil.NoSuchProcess:
-                        return
-                    time.sleep(0.05)
-            except Exception:
-                return
-
-        t = threading.Thread(
-            target=_monitor,
-            args=(process.pid, memory_limit_bytes, memory_exceeded),
-            daemon=True,
-        )
-        t.start()
+        return None, f"Ошибка запуска: {exc}", 0.0, None
 
     try:
         stdout, stderr = process.communicate(input=input_data, timeout=time_limit)
     except subprocess.TimeoutExpired:
         process.kill()
         process.communicate()
-        return None, f"Превышен лимит времени ({time_limit} с)"
+        return None, f"Превышен лимит времени ({time_limit} с)", time_limit, None
 
-    if memory_exceeded[0]:
+    elapsed = 0.0
+    mem_peak = None
+    clean_stderr_lines = []
+    for line in stderr.splitlines():
+        if line.startswith("__TIME__:"):
+            try:
+                elapsed = float(line.split(":", 1)[1])
+            except ValueError:
+                pass
+        elif line.startswith("__MEM__:"):
+            try:
+                mem_peak = int(line.split(":", 1)[1])
+            except ValueError:
+                pass
+        else:
+            clean_stderr_lines.append(line)
+    stderr = "\n".join(clean_stderr_lines)
+
+    if memory_limit_bytes > 0 and mem_peak is not None and mem_peak > memory_limit_bytes:
         limit_mb = memory_limit_bytes / (1024 * 1024)
-        return None, f"Превышен лимит памяти ({limit_mb:.0f} МБ / {memory_limit_bytes} байт)"
+        return None, f"Превышен лимит памяти ({limit_mb:.0f} МБ / {memory_limit_bytes} байт)", elapsed, mem_peak
 
     if stderr.strip():
         first_line = stderr.strip().splitlines()[-1]
-        return None, f"Ошибка выполнения: {first_line}"
+        return None, f"Ошибка выполнения: {first_line}", elapsed, mem_peak
 
-    return stdout.strip(), None
+    return stdout.strip(), None, elapsed, mem_peak
 
 
 def _check_forbidden_constructs(file_path: str, forbidden: List[str]) -> List[str]:
@@ -194,6 +196,45 @@ def _check_forbidden_constructs(file_path: str, forbidden: List[str]) -> List[st
             found.add(node_type)
 
     return sorted(found)
+
+
+def _check_construct_counts(
+    file_path: str,
+    max_constructs: Dict[str, int],
+) -> List[str]:
+    """
+    Проверяет, что количество каждой AST-конструкции не превышает заданный лимит.
+    Возвращает список нарушений (пустой список — всё OK).
+    """
+    if not max_constructs:
+        return []
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            source = f.read()
+        if not source.strip():
+            return []
+        tree = ast.parse(source, filename=file_path)
+    except SyntaxError as exc:
+        return [f"Синтаксическая ошибка при парсинге: {exc}"]
+    except Exception as exc:
+        return [f"Ошибка парсинга: {exc}"]
+
+    counts: Dict[str, int] = {}
+    for node in ast.walk(tree):
+        node_type = type(node).__name__
+        if node_type in max_constructs:
+            counts[node_type] = counts.get(node_type, 0) + 1
+
+    violations = []
+    for construct, limit in max_constructs.items():
+        actual = counts.get(construct, 0)
+        if actual > limit:
+            violations.append(
+                f"{construct}: найдено {actual}, допустимо не более {limit}"
+            )
+
+    return violations
 
 
 def _check_pep8(file_path: str) -> List[str]:
@@ -254,7 +295,18 @@ def run_task(config: TaskConfig, base_dir: str) -> TaskResult:
                 allowed = ", ".join(config.forbidden_constructs)
                 print(f"  ✅ AST: запрещённые конструкции [{allowed}] не найдены")
 
-        # 2. PEP 8 / flake8
+        # 2. Ограничения на количество конструкций (AST)
+        if config.max_constructs:
+            count_violations = _check_construct_counts(file_path, config.max_constructs)
+            if count_violations:
+                result.has_forbidden = True
+                for violation in count_violations:
+                    print(f"  ⛔ Превышен лимит конструкций: {violation}")
+            else:
+                limits = ", ".join(f"{k}≤{v}" for k, v in config.max_constructs.items())
+                print(f"  ✅ Лимиты конструкций [{limits}]: OK")
+
+        # 3. PEP 8 / flake8
         if config.check_pep8:
             pep8_issues = _check_pep8(file_path)
             result.pep8_issues = pep8_issues
@@ -275,21 +327,34 @@ def run_task(config: TaskConfig, base_dir: str) -> TaskResult:
 
     for i, tc in enumerate(config.test_cases, 1):
         result.total_tests += 1
-        output, error = _run_script(
+        output, error, elapsed, mem_peak = _run_script(
             file_path, tc.input_data, config.time_limit, config.memory_limit_bytes
         )
 
+        time_str = f"{elapsed * 1000:.1f} мс" if elapsed < 1.0 else f"{elapsed:.2f} с"
+        if mem_peak is not None:
+            if mem_peak < 1024:
+                mem_str = f"{mem_peak} Б"
+            elif mem_peak < 1024 * 1024:
+                mem_str = f"{mem_peak / 1024:.1f} КБ"
+            else:
+                mem_str = f"{mem_peak / (1024 * 1024):.2f} МБ"
+            metrics = f"  ⏱ {time_str}  💾 {mem_str}"
+        else:
+            metrics = f"  ⏱ {time_str}"
+
         if error is not None:
-            print(f"    Тест {i}: ❌  {error}")
-            _print_io(tc.input_data, tc.expected)
+            print(f"    Тест {i}: ❌  {error}{metrics}")
+            if "пустой" not in error:
+                _print_io(tc.input_data, tc.expected)
             continue
 
         passed, reason = config.validator(output, tc.expected)
         if passed:
             result.passed_tests += 1
-            print(f"    Тест {i}: ✅  Пройден")
+            print(f"    Тест {i}: ✅  Пройден{metrics}")
         else:
-            print(f"    Тест {i}: ❌  {reason}")
+            print(f"    Тест {i}: ❌  {reason}{metrics}")
             _print_io(tc.input_data, tc.expected, output)
 
     pct = result.percentage

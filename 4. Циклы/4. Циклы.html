@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4. Циклы</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/prism.css">
+    <script src="https://kit.fontawesome.com/b8991598f2.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><span class="emoji">🔄</span>4. Циклы</h1>
+        <p>Теоретический материал</p>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="#цикл-for">🔹 Цикл for</a></li>
+            <li><a href="#функция-range">🔹 Функция range</a></li>
+            <li><a href="#цикл-while">🔹 Цикл while</a></li>
+            <li><a href="#break-continue">🔹 Break и Continue</a></li>
+            <li><a href="#else-в-циклах">🔹 Else в циклах</a></li>
+        </ul>
+    </nav>
+
+    <main class="content">
+
+        <!-- ЦИКЛ FOR -->
+        <section id="цикл-for" class="section">
+            <h2>Цикл <code>for</code></h2>
+            <p>Цикл <code>for</code> в Python предназначен для перебора элементов любой последовательности (например, строки, списка, кортежа или диапазона чисел).</p>
+
+            <div class="syntax-block">
+                <pre><code>for переменная in последовательность:
+    тело_цикла</code></pre>
+            </div>
+
+            <div class="example-box">
+                <h4>Пример перебора строки:</h4>
+                <pre class="line-numbers match-braces"><code class="language-python">word = "Python"
+for char in word:
+    print(char, end='-')
+# Результат: P-y-t-h-o-n-</code></pre>
+            </div>
+        </section>
+
+        <!-- ФУНКЦИЯ RANGE -->
+        <section id="функция-range" class="section">
+            <h2>Функция <code>range()</code></h2>
+            <p>Функция <code>range</code> генерирует последовательность чисел. Она часто используется вместе с циклом <code>for</code> для выполнения действий определенное количество раз.</p>
+
+            <h3>Варианты использования (перегрузки)</h3>
+
+            <div class="function-block">
+                <div class="function-signature">range(stop)</div>
+                <div class="function-description">Генерирует числа от <code>0</code> до <code>stop - 1</code>.</div>
+            </div>
+            <div class="example-box">
+                <pre class="line-numbers match-braces"><code class="language-python">for i in range(3):
+    print(i, end=' ')
+# Результат: 0 1 2</code></pre>
+            </div>
+
+            <div class="function-block">
+                <div class="function-signature">range(start, stop)</div>
+                <div class="function-description">Генерирует числа от <code>start</code> до <code>stop - 1</code>.</div>
+            </div>
+            <div class="example-box">
+                <pre class="line-numbers match-braces"><code class="language-python">for i in range(2, 5):
+    print(i, end=' ')
+# Результат: 2 3 4</code></pre>
+            </div>
+
+            <div class="function-block">
+                <div class="function-signature">range(start, stop, step)</div>
+                <div class="function-description">Генерирует числа от <code>start</code> до <code>stop - 1</code> с шагом <code>step</code>.</div>
+            </div>
+            <div class="example-box">
+                <pre class="line-numbers match-braces"><code class="language-python">for i in range(0, 10, 2):
+    print(i, end=' ')
+# Результат: 0 2 4 6 8</code></pre>
+            </div>
+
+            <h3>Обратный порядок (отсчет назад)</h3>
+            <p>Чтобы считать в обратную сторону, нужно использовать <strong>отрицательный шаг</strong>. В этом случае <code>start</code> должен быть больше <code>stop</code>.</p>
+            
+            <div class="example-box">
+                <h4>Пример обратного отсчета:</h4>
+                <pre class="line-numbers match-braces"><code class="language-python"># От 5 до 1 (не включая 0)
+for i in range(5, 0, -1):
+    print(i, end=' ')
+# Результат: 5 4 3 2 1 </code></pre>
+            </div>
+        </section>
+
+        <!-- ЦИКЛ WHILE -->
+        <section id="цикл-while" class="section">
+            <h2>Цикл <code>while</code></h2>
+            <p>Цикл <code>while</code> выполняется до тех пор, пока истинно заданное условие (логическое выражение).</p>
+
+            <div class="syntax-block">
+                <pre><code>while логическое_выражение:
+    тело_цикла</code></pre>
+            </div>
+
+            <div class="important">
+                <p><strong>Важно:</strong> Если внутри цикла не меняется никакая переменная из логического выражения, то цикл никогда не закончится (бесконечный цикл).</p>
+            </div>
+
+            <div class="example-box">
+                <h4>Пример:</h4>
+                <pre class="line-numbers match-braces"><code class="language-python">count = 3
+while count > 0:
+    print(f"Осталось: {count}")
+    count -= 1  # Уменьшаем счетчик, чтобы условие когда-то стало False
+# Результат:
+# Осталось: 3
+# Осталось: 2
+# Осталось: 1</code></pre>
+            </div>
+        </section>
+
+        <!-- BREAK И CONTINUE -->
+        <section id="break-continue" class="section">
+            <h2>Операторы <code>break</code> и <code>continue</code></h2>
+            <p>Эти операторы позволяют изменить стандартное поведение циклов.</p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Оператор</th>
+                        <th>Описание</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><code>break</code></td>
+                        <td><strong>Полностью прерывает</strong> выполнение цикла. Программа переходит к инструкциям после цикла.</td>
+                    </tr>
+                    <tr>
+                        <td><code>continue</code></td>
+                        <td><strong>Прерывает текущую итерацию</strong> и переходит к следующей (возвращается к началу цикла/проверке условия).</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="example-box">
+                <h4>Пример использования:</h4>
+                <pre class="line-numbers match-braces"><code class="language-python">for i in range(10):
+    if i == 3:
+        continue  # Пропускаем число 3
+    if i == 6:
+        break     # Завершаем цикл на числе 6
+    print(i, end=' ')
+    
+# Результат: 0 1 2 4 5</code></pre>
+            </div>
+        </section>
+
+        <!-- ELSE В ЦИКЛАХ -->
+        <section id="else-в-циклах" class="section">
+            <h2>Блок <code>else</code> в циклах</h2>
+            <p>В Python циклы <code>for</code> и <code>while</code> могут иметь необязательный блок <code>else</code>.</p>
+            
+            <div class="note">
+                <p>Код в блоке <code>else</code> выполняется <strong>только в том случае</strong>, если цикл завершился "естественным" образом (условие стало ложным или закончился диапазон).</p>
+                <p>Если выход из цикла произошел с помощью <code>break</code>, блок <code>else</code> <strong>НЕ выполняется</strong>.</p>
+            </div>
+
+            <div class="syntax-block">
+                <pre><code>for item in collection:
+    if item == target:
+        break
+else:
+    # Выполнится, если break НЕ сработал (элемент не найден)
+    print("Элемент не найден")</code></pre>
+            </div>
+
+            <div class="example-box">
+                <h4>Пример (поиск простого числа):</h4>
+                <pre class="line-numbers match-braces"><code class="language-python">number = 15
+# Проверяем, есть ли делители
+for i in range(2, number):
+    if number % i == 0:
+        print(f"{number} - составное число (делится на {i})")
+        break
+else:
+    print(f"{number} - простое число")</code></pre>
+            </div>
+        </section>
+
+    </main>
+</div>
+<script src="../assets/js/prism.js"></script>
+<script src="../assets/js/script.js"></script>
+</body>
+</html>
